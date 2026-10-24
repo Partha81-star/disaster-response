@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/mobile.css">
 </head>
 <body>
   <div class="app-shell">
@@ -18,7 +19,7 @@
       <div class="side-bottom"><div class="system-card"><span class="pulse"></span><div><b>System operational</b><small>Ingestion & verification online</small></div></div><div class="user"><div class="avatar">OP</div><div><b>Duty operator</b><small>Control room</small></div><span class="dots">···</span></div></div>
     </aside>
     <main class="main-area">
-      <header class="topbar"><div class="breadcrumbs">Operations <span>/</span> <b>Incident board</b></div><div class="top-actions"><span class="live" id="connectionStatus"><i></i> CONNECTING</span><button class="icon-btn" id="refreshBtn" title="Refresh">↻</button><button class="primary-btn" id="newReportBtn"><span>＋</span> Log report</button></div></header>
+      <header class="topbar"><div class="breadcrumbs">Operations <span>/</span> <b>Incident board</b></div><div class="mobile-brand"><span class="mobile-brand-icon">⌖</span><span>FIELDWATCH</span></div><div class="top-actions"><span class="live" id="connectionStatus"><i></i> CONNECTING</span><button class="icon-btn" id="refreshBtn" title="Refresh" aria-label="Refresh incidents">↻</button><button class="primary-btn" id="newReportBtn"><span>＋</span> Log report</button></div></header>
       <section class="content">
         <div class="page-heading"><div><div class="eyebrow">CITY RESPONSE · PIMPRI-CHINCHWAD</div><h1>Incident board</h1><p>Monitor incoming signals, verify reports, and coordinate a human-led response.</p></div><div class="updated">UPDATED <b id="lastUpdated">—</b></div></div>
         <section class="stats-grid">

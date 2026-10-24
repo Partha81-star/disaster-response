@@ -7,6 +7,7 @@ const placeOf = (incident) => incident.location.raw_text || incident.location.pr
 
 function initMap() {
   if (!window.L || state.map) return;
+  document.querySelector("#map .map-placeholder")?.remove();
   state.map = L.map("map", { zoomControl: false }).setView([18.6298, 73.7997], 11);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(state.map);
   L.control.zoom({ position: "bottomright" }).addTo(state.map);
