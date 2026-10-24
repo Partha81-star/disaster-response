@@ -1,0 +1,38 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: production
+      DATABASE_PATH: /data/incidents.sqlite3
+      OPERATOR_TOKEN: ${OPERATOR_TOKEN:?Set OPERATOR_TOKEN}
+      COOKIE_SECURE: "true"
+      RSS_FEEDS: ${RSS_FEEDS:-}
+      FEED_KEYWORDS: ${FEED_KEYWORDS:-}
+      FEED_POLL_SECONDS: ${FEED_POLL_SECONDS:-120}
+      GEOCODER_USER_AGENT: ${GEOCODER_USER_AGENT:?Set GEOCODER_USER_AGENT}
+    volumes:
+      - incident_data:/data
+    restart: unless-stopped
+
+  proxy:
+    image: caddy:2
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  incident_data:
+  caddy_data:
+  caddy_config:

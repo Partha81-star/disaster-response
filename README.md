@@ -34,6 +34,17 @@ docker compose up --build -d
 
 The dashboard runs on port 8000 and asks for the operator token. SQLite data is stored in the `incident_data` volume. Deploy **one app replica**: in-process server-sent events and the RSS collector are single-instance components. Put an HTTPS reverse proxy in front, set `COOKIE_SECURE=true`, and keep the token and volume backed up. Docker was not available in the development environment, so the container build has not been exercised here.
 
+### Oracle Cloud Always Free VM
+
+The [Oracle VM configuration](deploy/compose.oci.yaml) adds Caddy for HTTPS and keeps the API private behind the proxy. Provision an Always Free Ubuntu VM, point a domain name at its public IP, and allow inbound TCP 80/443 (plus UDP 443 if desired) in both the Oracle network security rules and the VM firewall. Install Docker Engine with the Compose plugin, then clone the repository and create `deploy/.env` from `deploy/.env.example` with a strong token and your domain. From the repository root run:
+
+```bash
+docker compose --env-file deploy/.env -f deploy/compose.oci.yaml up --build -d
+docker compose --env-file deploy/.env -f deploy/compose.oci.yaml ps
+```
+
+The operator token stays in the VM environment file and must never be committed. DNS and public ports must be working before Caddy can obtain a certificate. Keep this as a single VM and back up the `incident_data` volume; free resources can still be unavailable during VM provisioning.
+
 Set `RSS_FEEDS` to a comma-separated list of RSS/Atom URLs and `FEED_KEYWORDS` to city or locality names. Only entries containing a recognized hazard and a configured locality keyword are ingested. `FEED_POLL_SECONDS` defaults to 120. Feed availability and update frequency depend on the sources; this collector does not read emergency calls, private social networks, or sensors.
 
 ## API
