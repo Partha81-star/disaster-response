@@ -4,9 +4,9 @@ A human-in-the-loop decision-support pipeline that turns noisy emergency reports
 
 ## Current vertical slice
 
-`Raw reports → deterministic extraction → place lookup → deduplication → conservative OSM context check → urgency score → review queue API`
+`Raw reports → deterministic extraction → place lookup → batch deduplication → conservative OSM context check → urgency score → persistent operator review queue`
 
-The service starts without model credentials. Extraction is intentionally a simple baseline so provider-backed structured extraction can be introduced behind the same contracts. Nominatim and Overpass are live OpenStreetMap services; geocoding confidence is a heuristic and OSM context cannot prove that an emergency occurred. Reports therefore remain in `needs_review` until independent evidence is connected.
+The app includes a responsive operator dashboard with a report map, search and status filters, incident evidence details, report entry, and operator decisions. Incidents persist in a local SQLite database. The service starts without model credentials. Extraction is intentionally a simple baseline so provider-backed structured extraction can be introduced behind the same contracts. Nominatim and Overpass are live OpenStreetMap services; geocoding confidence is a heuristic and OSM context cannot prove that an emergency occurred. Reports therefore remain in `needs_review` until an operator reviews them.
 
 ## Run locally
 
@@ -20,11 +20,11 @@ Copy-Item .env.example .env
 disaster-response
 ```
 
-Open `http://127.0.0.1:8000/docs` for the API UI. Set a descriptive `GEOCODER_USER_AGENT` in `.env` before making geocoding requests. Respect Nominatim and Overpass usage policies; use a local or hosted provider for sustained ingestion.
+Open `http://127.0.0.1:8000` for the dashboard or `http://127.0.0.1:8000/docs` for the API. Set a descriptive `GEOCODER_USER_AGENT` in `.env` before making geocoding requests. Respect Nominatim and Overpass usage policies; use a local or hosted provider for sustained ingestion.
 
 ## API
 
-`POST /api/v1/ingest` accepts a batch of up to 100 `RawItem` records and returns deduplicated `Incident` records. `GET /api/v1/incidents` lists the in-memory review queue, sorted by urgency. `GET /api/v1/incidents/{incident_id}` returns a single record. Storage is intentionally in-memory for this scaffold; production persistence should use PostgreSQL with PostGIS and an audit log.
+`POST /api/v1/ingest` accepts a batch of up to 100 `RawItem` records and returns deduplicated `Incident` records. `GET /api/v1/incidents` lists persistent incidents sorted by urgency; `GET /api/v1/incidents/{incident_id}` returns one record; `POST /api/v1/incidents/{incident_id}/decision` records an operator verdict and note; and `GET /api/v1/summary` returns dashboard counts. SQLite is suitable for local development; a multi-operator deployment should move to PostgreSQL/PostGIS and append-only audit records.
 
 Example request:
 
@@ -43,8 +43,8 @@ Example request:
 
 - Pydantic contracts are shared across pipeline stages; unresolved locations retain null coordinates and `unknown` precision.
 - Infrastructure matches are evidence context only. Lack of an OSM feature does not mean an incident is false.
-- The verifier requires human review when location, corroboration, or sensor evidence is insufficient.
-- Urgency is a transparent baseline formula, not a dispatch command. The API currently produces triage data only.
+- The verifier routes reports to human review because OSM context alone cannot confirm that an event occurred. Operator decisions require a note.
+- Urgency is a transparent baseline formula, not a dispatch command. Accepting a report does not dispatch resources.
 - Deduplication currently merges matching hazard and normalized place text in one request batch. Production clustering should use spatial distance, time windows, and source diversity.
 
 ## Next milestones

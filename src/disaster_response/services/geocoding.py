@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import re
 from typing import Protocol
 
 import httpx
@@ -34,10 +33,14 @@ class NominatimGeocoder:
         query = text.strip()
         if len(query) < 2:
             return None
-        async with httpx.AsyncClient(timeout=8.0, headers={"User-Agent": self.user_agent}) as client:
-            response = await client.get(f"{self.base_url}/search", params={"q": query, "format": "jsonv2", "limit": 3, "addressdetails": 1})
-            response.raise_for_status()
-            results = response.json()
+        try:
+            async with httpx.AsyncClient(timeout=8.0, headers={"User-Agent": self.user_agent}) as client:
+                response = await client.get(f"{self.base_url}/search", params={"q": query, "format": "jsonv2", "limit": 3, "addressdetails": 1})
+                response.raise_for_status()
+                results = response.json()
+        except httpx.HTTPError:
+            # Preserve the report; the incident will carry an unresolved location and enter review.
+            return None
         if not results:
             return None
         best = results[0]

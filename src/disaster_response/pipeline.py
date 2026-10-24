@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from datetime import timedelta
 from uuid import uuid4
 
 from .models import (
@@ -13,7 +12,6 @@ from .models import (
     Location,
     LocationPrecision,
     RawItem,
-    VerificationStatus,
 )
 from .services.geocoding import Geocoder
 from .services.verification import Verifier
@@ -57,17 +55,24 @@ class IncidentPipeline:
 
     async def _extract_and_cluster(self, items: list[RawItem]) -> list[Incident]:
         grouped: dict[tuple[HazardType, str], list[RawItem]] = defaultdict(list)
+        resolved_places = {}
+        geocode_cache = {}
         for item in items:
             place = extract_location_text(item.text)
-            resolved = await self.geocoder.geocode(place) if place else None
-            key = (infer_hazard(item.text), self._place_key(resolved.display_name if resolved else place))
+            place_cache_key = self._place_key(place)
+            if place_cache_key not in geocode_cache:
+                geocode_cache[place_cache_key] = await self.geocoder.geocode(place) if place else None
+            resolved = geocode_cache[place_cache_key]
+            normalized_place = self._place_key(resolved.display_name if resolved else place)
+            key = (infer_hazard(item.text), normalized_place)
+            resolved_places[key] = (place, resolved)
             grouped[key].append(item)
 
         incidents: list[Incident] = []
-        for (hazard, _), group in grouped.items():
+        for key, group in grouped.items():
+            hazard, _ = key
             first = min(group, key=lambda item: item.reported_at)
-            place = extract_location_text(first.text)
-            candidate = await self.geocoder.geocode(place) if place else None
+            place, candidate = resolved_places[key]
             if candidate:
                 location = Location(raw_text=place, lat=candidate.lat, lon=candidate.lon,
                                     geocode_confidence=candidate.confidence, precision=candidate.precision)
