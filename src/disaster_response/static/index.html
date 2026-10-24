@@ -12,13 +12,13 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <a class="brand" href="/"><span class="brand-mark">✳</span><span>FIELDWATCH<small>RESPONSE NETWORK</small></span></a>
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" width="25" height="25" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 31s10-9.1 10-17a10 10 0 1 0-20 0c0 7.9 10 17 10 17Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="18" cy="14" r="3.5" fill="currentColor"/><path d="M3 25c3-2.2 5-3 7-3M33 25c-3-2.2-5-3-7-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>FIELDWATCH<small>RESPONSE NETWORK</small></span></a>
       <div class="workspace-label">OPERATIONS</div>
       <button class="nav-item active"><span class="nav-icon">◫</span>Incident board<span class="nav-count" id="navCount">0</span></button>
       <div class="side-bottom"><div class="system-card"><span class="pulse"></span><div><b>System operational</b><small>Ingestion & verification online</small></div></div><div class="user"><div class="avatar">OP</div><div><b>Duty operator</b><small>Control room</small></div><span class="dots">···</span></div></div>
     </aside>
     <main class="main-area">
-      <header class="topbar"><div class="breadcrumbs">Operations <span>/</span> <b>Incident board</b></div><div class="top-actions"><span class="live"><i></i> LIVE MONITORING</span><button class="icon-btn" id="refreshBtn" title="Refresh">↻</button><button class="primary-btn" id="newReportBtn"><span>＋</span> Log report</button></div></header>
+      <header class="topbar"><div class="breadcrumbs">Operations <span>/</span> <b>Incident board</b></div><div class="top-actions"><span class="live" id="connectionStatus"><i></i> CONNECTING</span><button class="icon-btn" id="refreshBtn" title="Refresh">↻</button><button class="primary-btn" id="newReportBtn"><span>＋</span> Log report</button></div></header>
       <section class="content">
         <div class="page-heading"><div><div class="eyebrow">CITY RESPONSE · PIMPRI-CHINCHWAD</div><h1>Incident board</h1><p>Monitor incoming signals, verify reports, and coordinate a human-led response.</p></div><div class="updated">UPDATED <b id="lastUpdated">—</b></div></div>
         <section class="stats-grid">
@@ -29,7 +29,7 @@
         </section>
         <section class="work-grid">
           <div class="panel map-panel"><div class="panel-head"><div><h2>Situation map</h2><p>Incident locations · OpenStreetMap</p></div><span class="map-legend"><i></i> Reports</span></div><div id="map"><div class="map-placeholder">Loading map…</div></div><div class="map-foot"><span><i class="legend-dot orange-dot"></i>Needs review</span><span><i class="legend-dot green-dot"></i>Accepted</span><span><i class="legend-dot gray-dot"></i>Rejected</span><span class="map-note">Locations may be approximate</span></div></div>
-          <div class="panel queue-panel"><div class="panel-head queue-head"><div><h2>Incoming reports <span class="count-pill" id="queueCount">0</span></h2><p>Prioritized by urgency score</p></div><button class="text-btn" id="clearFilters">Reset</button></div><div class="filters"><label class="search-box"><span>⌕</span><input id="searchInput" placeholder="Search reports or places"></label><select id="statusFilter"><option value="all">All statuses</option><option value="needs_review">Needs review</option><option value="accepted">Accepted</option><option value="rejected">Rejected</option></select></div><div class="incident-list" id="incidentList"><div class="empty-state">Loading incoming reports…</div></div><div class="queue-footer"><span id="showingCount">0 reports</span><span>Auto-refresh · 30 sec</span></div></div>
+          <div class="panel queue-panel"><div class="panel-head queue-head"><div><h2>Incoming reports <span class="count-pill" id="queueCount">0</span></h2><p>Prioritized by urgency score</p></div><button class="text-btn" id="clearFilters">Reset</button></div><div class="filters"><label class="search-box"><span>⌕</span><input id="searchInput" placeholder="Search reports or places"></label><select id="statusFilter"><option value="all">All statuses</option><option value="needs_review">Needs review</option><option value="accepted">Accepted</option><option value="rejected">Rejected</option></select></div><div class="incident-list" id="incidentList"><div class="empty-state">Loading incoming reports…</div></div><div class="queue-footer"><span id="showingCount">0 reports</span><span>Instant updates when connected</span></div></div>
         </section>
         <div class="safety-note"><span>ⓘ</span><div><b>Decision support only.</b> This system does not dispatch resources. Confirm reports and approve response actions through established emergency procedures.</div></div>
       </section>

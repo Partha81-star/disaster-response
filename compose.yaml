@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: production
+      DATABASE_PATH: /data/incidents.sqlite3
+      OPERATOR_TOKEN: ${OPERATOR_TOKEN:?Set OPERATOR_TOKEN}
+      RSS_FEEDS: ${RSS_FEEDS:-}
+      FEED_POLL_SECONDS: ${FEED_POLL_SECONDS:-120}
+      FEED_KEYWORDS: ${FEED_KEYWORDS:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      GEOCODER_USER_AGENT: ${GEOCODER_USER_AGENT:-disaster-response-system/0.2}
+    volumes:
+      - incident_data:/data
+    restart: unless-stopped
+volumes:
+  incident_data:

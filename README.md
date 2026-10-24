@@ -6,7 +6,7 @@ A human-in-the-loop decision-support pipeline that turns noisy emergency reports
 
 `Raw reports → deterministic extraction → place lookup → batch deduplication → conservative OSM context check → urgency score → persistent operator review queue`
 
-The app includes a responsive operator dashboard with a report map, search and status filters, incident evidence details, report entry, and operator decisions. Incidents persist in a local SQLite database. The service starts without model credentials. Extraction is intentionally a simple baseline so provider-backed structured extraction can be introduced behind the same contracts. Nominatim and Overpass are live OpenStreetMap services; geocoding confidence is a heuristic and OSM context cannot prove that an emergency occurred. Reports therefore remain in `needs_review` until an operator reviews them.
+The app includes a responsive operator dashboard with a report map, search and status filters, incident evidence details, report entry, and operator decisions. Incidents persist in SQLite. Browser clients receive server-sent updates as soon as reports or decisions arrive. A configurable RSS/Atom collector can poll relevant feeds and submit entries through the same pipeline. Extraction remains a deterministic baseline. Nominatim and Overpass provide location context, but do not prove an emergency occurred; reports remain in `needs_review` until an operator reviews them.
 
 ## Run locally
 
@@ -22,9 +22,23 @@ disaster-response
 
 Open `http://127.0.0.1:8000` for the dashboard or `http://127.0.0.1:8000/docs` for the API. Set a descriptive `GEOCODER_USER_AGENT` in `.env` before making geocoding requests. Respect Nominatim and Overpass usage policies; use a local or hosted provider for sustained ingestion.
 
+The `disaster-response` CLI loads `.env` from the current directory when present.
+
+## Deploy with Docker Compose
+
+Set `OPERATOR_TOKEN` to a long random value in your shell or a local `.env` file. Then run:
+
+```powershell
+docker compose up --build -d
+```
+
+The dashboard runs on port 8000 and asks for the operator token. SQLite data is stored in the `incident_data` volume. Deploy **one app replica**: in-process server-sent events and the RSS collector are single-instance components. Put an HTTPS reverse proxy in front, set `COOKIE_SECURE=true`, and keep the token and volume backed up. Docker was not available in the development environment, so the container build has not been exercised here.
+
+Set `RSS_FEEDS` to a comma-separated list of RSS/Atom URLs and `FEED_KEYWORDS` to city or locality names. Only entries containing a recognized hazard and a configured locality keyword are ingested. `FEED_POLL_SECONDS` defaults to 120. Feed availability and update frequency depend on the sources; this collector does not read emergency calls, private social networks, or sensors.
+
 ## API
 
-`POST /api/v1/ingest` accepts a batch of up to 100 `RawItem` records and returns deduplicated `Incident` records. `GET /api/v1/incidents` lists persistent incidents sorted by urgency; `GET /api/v1/incidents/{incident_id}` returns one record; `POST /api/v1/incidents/{incident_id}/decision` records an operator verdict and note; and `GET /api/v1/summary` returns dashboard counts. SQLite is suitable for local development; a multi-operator deployment should move to PostgreSQL/PostGIS and append-only audit records.
+`POST /api/v1/ingest` accepts a batch of up to 100 `RawItem` records and returns deduplicated `Incident` records. `GET /api/v1/incidents` lists persistent incidents sorted by urgency; `GET /api/v1/incidents/{incident_id}` returns one record; `POST /api/v1/incidents/{incident_id}/decision` records an operator verdict and note; `GET /api/v1/incidents/{incident_id}/history` returns its decision history; `GET /api/v1/events` streams change notifications; and `GET /api/v1/summary` returns dashboard counts. In production, all `/api/v1/*` endpoints except session and config require the operator cookie. SQLite is suitable for a single-instance deployment; a multi-replica deployment needs PostgreSQL/PostGIS and shared events.
 
 Example request:
 
@@ -50,7 +64,7 @@ Example request:
 ## Next milestones
 
 1. Replace keyword extraction with a schema-constrained model adapter and add labeled extraction/geocoding evaluation.
-2. Persist incidents and evidence in PostGIS; add spatial/time-window clustering and a source-diversity model.
+2. Move to PostGIS for multiple replicas; add spatial/time-window clustering and a source-diversity model.
 3. Add independent rainfall, gauge, road-closure, and trusted-source feeds for evidence-backed verification.
 4. Add operator review, audit history, and explicit approval workflows.
 5. Add a constrained vehicle routing solver only after resource, capacity, depot, and travel-time data are defined.

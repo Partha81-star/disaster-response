@@ -96,4 +96,26 @@ $("#reportForm").addEventListener("submit", async (event) => {
   finally { button.disabled = false; button.innerHTML = 'Process report <span>→</span>'; }
 });
 
-document.addEventListener("DOMContentLoaded", () => { loadIncidents(); setInterval(loadIncidents, 30000); });
+async function startApp() {
+  try {
+    const configResponse = await fetch("/api/v1/config");
+    if (!configResponse.ok) throw new Error("Could not read application configuration");
+    const config = await configResponse.json();
+    const existingSession = config.auth_required ? await fetch("/api/v1/incidents") : null;
+    if (config.auth_required && existingSession.status === 401) {
+      const token = window.prompt("Enter the operator access token:");
+      if (!token) { toast("Operator sign-in is required."); return; }
+      const login = await fetch("/api/v1/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
+      if (!login.ok) { toast("Invalid operator token. Reload to retry."); return; }
+    }
+    await loadIncidents();
+    const stream = new EventSource("/api/v1/events");
+    stream.addEventListener("connected", () => { $("#connectionStatus").innerHTML = "<i></i> LIVE UPDATES"; });
+    stream.addEventListener("incidents_changed", loadIncidents);
+    stream.onerror = () => { $("#connectionStatus").innerHTML = "<i></i> RECONNECTING"; };
+    setInterval(loadIncidents, 60000);
+    if (!config.feed_enabled) $("#connectionStatus").title = "Live operator updates are active. Automatic feed ingestion is not configured.";
+  } catch (error) { toast(error.message); }
+}
+
+document.addEventListener("DOMContentLoaded", startApp);
