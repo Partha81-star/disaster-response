@@ -7,6 +7,7 @@ __pycache__/
 data/*.json
 data/*.sqlite3
 data/
+site-hosted/
 dist/
 build/
 *.egg-info/

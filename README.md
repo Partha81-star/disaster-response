@@ -1,5 +1,9 @@
 # Disaster Response System
 
+## Hosted version
+
+The [Fieldwatch hosted dashboard](https://fieldwatch-disaster-response.greenpika64.chatgpt.site) is published as an owner-private Site. It uses a persistent hosted D1 database and checks for new incidents every 15 seconds. Sign in with the account that owns the Site. The hosted version supports manual report intake, incident review, operator decisions, and decision history. The automatic RSS collector in the local Docker service is not enabled on this hosted version.
+
 A human-in-the-loop decision-support pipeline that turns noisy emergency reports into structured, geolocated incidents with evidence and triage scores. It does **not** dispatch responders autonomously.
 
 ## Current vertical slice
